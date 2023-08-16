@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:scan_it/screens/home_screen.dart';
+import 'package:scan_it/screens/ScannerScreen.dart';
 import 'package:scan_it/screens/login_screen.dart';
 
 class Auth extends StatelessWidget {
@@ -15,7 +16,7 @@ class Auth extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: ((context, snapshot) {
         if (snapshot.hasData) {
-          return HomeScreen();
+          return ScanDocumentScreen();
         } else {
           return LoginScreen();
         }

@@ -37,6 +37,15 @@ dependencies:
   google_fonts:
   firebase_core: ^2.13.0
   firebase_auth: ^4.6.1
+  camera: ^0.10.5
+  pdf: ^3.10.3
+  path_provider: ^2.0.15
+  image_picker: ^0.8.7+5
+  printing: ^5.10.4
+  advance_pdf_viewer: any
+  firebase_storage: ^11.2.1
+  qr_code_scanner: ^1.0.1
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

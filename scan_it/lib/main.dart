@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scan_it/screens/Auth.dart';
+import 'package:scan_it/screens/ScannerScreen.dart';
 import 'package:scan_it/screens/home_screen.dart';
 import 'package:scan_it/screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -22,10 +23,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      // home: const Auth(),
+      // home: ImgScreen(),
       routes: {
         '/': (context) => const Auth(),
-        'homeScreen': (context) => const HomeScreen(),
+        'homeScreen': (context) => ScanDocumentScreen(),
         'signupScreen': (context) => const SignupScreen(),
         'loginScreen': (context) => const LoginScreen(),
       },
