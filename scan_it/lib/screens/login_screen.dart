@@ -1,199 +1,207 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: unnecessary_new
 
+import 'package:scan_it/screens/home_screen.dart';
+import 'package:scan_it/screens/register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  // ignore: library_private_types_in_public_api
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  // form key
+  final _formKey = GlobalKey<FormState>();
 
-  Future<void> signIn() async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-    } catch (error) {
-      String errorMessage = 'An error occurred.';
+  // editing controller
+  final TextEditingController emailController = new TextEditingController();
+  final TextEditingController passwordController = new TextEditingController();
 
-      if (error is FirebaseAuthException) {
-        switch (error.code) {
-          case 'invalid-email':
-            errorMessage = 'Invalid email address.';
-            break;
-          case 'wrong-password':
-            errorMessage = 'Invalid password.';
-            break;
-          case 'user-not-found':
-            errorMessage = 'User not found.';
-            break;
-        }
-      }
+  // firebase
+  final _auth = FirebaseAuth.instance;
 
-      showLoginErrorDialog(errorMessage);
-    }
-  }
-
-  void openSignupScreen() {
-    Navigator.of(context).pushReplacementNamed('signupScreen');
-  }
-
-  void showLoginErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Login Error'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  // string for displaying the error Message
+  String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
+    //email field
+    final emailField = TextFormField(
+        autofocus: false,
+        controller: emailController,
+        keyboardType: TextInputType.emailAddress,
+        validator: (value) {
+          if (value!.isEmpty) {
+            return ("Please Enter Your Email");
+          }
+          // reg expression for email validation
+          if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+              .hasMatch(value)) {
+            return ("Please Enter a valid email");
+          }
+          return null;
+        },
+        onSaved: (value) {
+          emailController.text = value!;
+        },
+        textInputAction: TextInputAction.next,
+        decoration: InputDecoration(
+          prefixIcon: const Icon(Icons.mail),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
+          hintText: "Email",
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ));
+
+    //password field
+    final passwordField = TextFormField(
+        autofocus: false,
+        controller: passwordController,
+        obscureText: true,
+        validator: (value) {
+          RegExp regex = new RegExp(r'^.{6,}$');
+          if (value!.isEmpty) {
+            return ("Password is required for login");
+          }
+          if (!regex.hasMatch(value)) {
+            return ("Enter Valid Password(Min. 6 Character)");
+          }
+          return null;
+        },
+        onSaved: (value) {
+          passwordController.text = value!;
+        },
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(
+          prefixIcon: const Icon(Icons.vpn_key),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
+          hintText: "Password",
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ));
+
+    final loginButton = Material(
+      elevation: 5,
+      borderRadius: BorderRadius.circular(30),
+      color: Colors.amber[900],
+      child: MaterialButton(
+          padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
+          minWidth: MediaQuery.of(context).size.width,
+          onPressed: () {
+            signIn(emailController.text, passwordController.text);
+          },
+          child: const Text(
+            "Login",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+          )),
+    );
+
     return Scaffold(
       backgroundColor: Colors.lightBlue[200],
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'images/colorPalette.png',
-                  height: 180,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'SIGN IN',
-                  style: GoogleFonts.robotoCondensed(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Welcome Back! Nice To See You Again',
-                  style: GoogleFonts.robotoCondensed(
-                    fontSize: 18,
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: TextField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Email',
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Password',
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: GestureDetector(
-                    onTap: signIn,
-                    child: Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.amber[900],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Sign in',
-                          style: GoogleFonts.robotoCondensed(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Row(
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            color: Colors.lightBlue[200],
+            child: Padding(
+              padding: const EdgeInsets.all(36.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Not Yet a Member?',
-                      style: GoogleFonts.robotoCondensed(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: openSignupScreen,
-                      child: Text(
-                        'Sign up Now',
-                        style: GoogleFonts.robotoCondensed(
-                          color: Colors.green[400],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(
+                        height: 200,
+                        child: Image.asset(
+                          "images/colorPalette.png",
+                          fit: BoxFit.contain,
+                        )),
+                    const SizedBox(height: 45),
+                    emailField,
+                    const SizedBox(height: 25),
+                    passwordField,
+                    const SizedBox(height: 35),
+                    loginButton,
+                    const SizedBox(height: 15),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const Text("Don't have an account? "),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const RegistrationScreen()));
+                            },
+                            child: Text(
+                              "SignUp",
+                              style: TextStyle(
+                                  color: Colors.amber[900],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15),
+                            ),
+                          )
+                        ])
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  // login function
+  void signIn(String email, String password) async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await _auth
+            .signInWithEmailAndPassword(email: email, password: password)
+            .then((uid) => {
+                  Fluttertoast.showToast(msg: "Login Successful"),
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (context) => const HomeScreen())),
+                });
+      } on FirebaseAuthException catch (error) {
+        switch (error.code) {
+          case "invalid-email":
+            errorMessage = "Your email address appears to be malformed.";
+
+            break;
+          case "wrong-password":
+            errorMessage = "Your password is wrong.";
+            break;
+          case "user-not-found":
+            errorMessage = "User with this email doesn't exist.";
+            break;
+          case "user-disabled":
+            errorMessage = "User with this email has been disabled.";
+            break;
+          case "too-many-requests":
+            errorMessage = "Too many requests";
+            break;
+          case "operation-not-allowed":
+            errorMessage = "Signing in with Email and Password is not enabled.";
+            break;
+          default:
+            errorMessage = "An undefined Error happened.";
+        }
+        Fluttertoast.showToast(msg: errorMessage!);
+        // ignore: avoid_print
+        print(error.code);
+      }
+    }
   }
 }

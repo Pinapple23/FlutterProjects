@@ -1,0 +1,74 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+
+class ImageUploadPage extends StatefulWidget {
+  const ImageUploadPage({super.key});
+
+  @override
+  _ImageUploadPageState createState() => _ImageUploadPageState();
+}
+
+class _ImageUploadPageState extends State<ImageUploadPage> {
+  File? _imageFile;
+  final picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_imageFile == null) return;
+
+    FirebaseStorage storage = FirebaseStorage.instance;
+    Reference storageReference =
+        storage.ref().child('Image1/${DateTime.now()}.png');
+    UploadTask uploadTask = storageReference.putFile(_imageFile!);
+
+    await uploadTask.whenComplete(() {
+      print('Image uploaded to Firebase Storage');
+    }).catchError((error) {
+      print('Error uploading image: $error');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Image Upload Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            _imageFile != null
+                ? Image.file(_imageFile!)
+                : Text('No Image Selected'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _pickImage,
+              child: Text('Take Photo'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _uploadImage,
+              child: Text('Upload Image to Firebase'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(home: ImageUploadPage()));
+}
